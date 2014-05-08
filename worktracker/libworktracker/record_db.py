@@ -124,8 +124,8 @@ class LiteTable(object):
         i2, i3 = itertools.tee(i1)
         colstr = ','.join((x for (x,y) in i2))
         valstr = ','.join(itertools.imap(transform, i3))
-        q = 'insert into %s (%s) values (%s)'%(self.tableName, colstr, 
-                valstr)
+        q = 'insert or rollback into %s (%s) values (%s)'%(self.tableName,
+                colstr, valstr)
         return q
 
     def _create_insertstr1(self, **args):
@@ -292,12 +292,13 @@ class LiteTable(object):
 def create_record_table(db_full_path, log_fn):
     table = LiteTable(db_full_path, "WorkRecord",
             dict( id = 'integer primary key autoincrement',
-                from_timestamp = 'integer',
-                to_timestamp = 'integer',
-                num_interrupts = 'integer',
+                from_timestamp = 'integer unique',
+                to_timestamp = 'integer unique',
+                num_interruptions = 'integer',
                 num_distractions = 'integer',
                 work_type = 'text',
-                day_type = 'text'
+                day_type = 'text',
+                task = 'text'
                 ), log_fn)
     table.create()
     return table

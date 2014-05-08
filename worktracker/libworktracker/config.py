@@ -16,4 +16,5 @@ class Config(object):
     day_types = ['w', 'h']
     work_types = ['conpow', 'yv', 'meta']
     db_full_path = get_db_full_path()
-    
+    min_work_block = 10*60
+    timezone ='Europe/London'
