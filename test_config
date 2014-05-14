@@ -1,0 +1,8 @@
+[DEFAULT]
+key4 = def_file_val_4
+
+[worktracker]
+key1 = file_val_1
+key2 = file_val_2
+key3 = file_val_3
+

@@ -8,7 +8,7 @@ import shutil
 import time
 import sqlite3
 
-from worktracker.libworktracker import config
+from worktracker.libworktracker import config as config_module
 
 class FakeDbModule(object):
     @staticmethod
@@ -26,8 +26,6 @@ class TestRecorder(unittest.TestCase):
     def setUp(self):
         self.test_args = "h yv".split() + ["test task"]
         self.temp_dir = tempfile.mkdtemp('test_recorder')
-        self.db_path = os.path.join(self.temp_dir,
-                config.get_default_db_name())
 
     def printfn(self, *args, **kwargs):
         show_gui_dialog = False
@@ -45,7 +43,13 @@ class TestRecorder(unittest.TestCase):
 
     def test_10_validate_args(self):
         from worktracker import record_now
-        args, _, _ = record_now.main(config.Config, MockRecorder,
+        config = config_module.Config(overriding_params=
+                {
+                    'data_dir':self.temp_dir,
+                    'day_types': ['w', 'h'],
+                    'work_types': ['meta', 'yv', 'conpow']
+                    })
+        args, _, _ = record_now.main(config, MockRecorder,
                 FakeDbModule,
                 test_args = ['--start-with', '30', '--timeout-mins', '20',
                 '--minimum-work-block', '10', 'h', 'meta', 'test task 10'],
@@ -58,38 +62,45 @@ class TestRecorder(unittest.TestCase):
         self.assertEqual(args.timeout_secs, 20*60)
         self.assertEqual(args.min_work_block, 10*60)
         self.assertEqual(args.task, "test task 10")
-        self.assertEqual(args.db_path, config.Config.db_full_path)
+        self.assertEqual(args.db_path, config.db_full_path)
 
     def test_20_verify_db_created_on_initialization(self):
         from worktracker import record_now
         from worktracker.libworktracker import record_db
-        # Long timeout
-        config.Config.timeout_secs = 1000 
-        config.Config.db_full_path = self.db_path
-        _, _, db_table = record_now.main(config.Config, MockRecorder,
+        config = config_module.Config(overriding_params={
+            'data_dir':self.temp_dir,
+            'timeout_secs' : 1000,
+            'day_types': ['w', 'h'],
+            'work_types': ['meta', 'yv', 'conpow']
+            })
+        _, _, db_table = record_now.main(config, MockRecorder,
                 record_db, test_args=self.test_args,
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn)
-        self.assertTrue(os.path.isfile(config.Config.db_full_path))
+        self.assertTrue(os.path.isfile(config.db_full_path))
 
     def test_30_verify_row_inserted_on_timeout(self):
         from worktracker import record_now
         from worktracker.libworktracker import record_db
         from worktracker.libworktracker import recorder
         # short timeout to check if the row has been inserted
-        config.Config.timeout_secs = 1
-        config.Config.min_work_block = 0
-        config.Config.db_full_path = self.db_path
+        config_ob = config_module.Config(overriding_params={
+            'data_dir':self.temp_dir,
+            'timeout_secs' : 1,
+            'min_work_block': 0,
+            'day_types': ['w', 'h'],
+            'work_types': ['meta', 'yv', 'conpow']
+            })
         approx_from_time = time.time()
-        _, recorder, db_table = record_now.main(config.Config,
+        _, recorder, db_table = record_now.main(config_ob,
                 recorder.Recorder, record_db,
                 test_args='h yv'.split() + ["test task 30"],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn
                 )
-        self.assertTrue(os.path.isfile(config.Config.db_full_path))
+        self.assertTrue(os.path.isfile(config_ob.db_full_path))
         time.sleep(2)
-        conn = sqlite3.connect(config.Config.db_full_path)
+        conn = sqlite3.connect(config_ob.db_full_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM WorkRecord')
@@ -109,19 +120,23 @@ class TestRecorder(unittest.TestCase):
         from worktracker import record_now
         from worktracker.libworktracker import record_db
         from worktracker.libworktracker import recorder as r
-        config.Config.timeout_secs = 600  
-        config.Config.db_full_path = self.db_path
-        config.Config.min_work_block = 0
+        config = config_module.Config(overriding_params={
+            'data_dir':self.temp_dir,
+            'timeout_secs' : 600,
+            'min_work_block': 0,
+            'day_types': ['w', 'h'],
+            'work_types': ['meta', 'yv', 'conpow']
+            })
         approx_from_time = time.time()
-        _, recorder, db_table = record_now.main(config.Config,
+        _, recorder, db_table = record_now.main(config,
                 r.Recorder, record_db, test_args="h yv".split() + ["test 40"],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn)
-        self.assertTrue(os.path.isfile(config.Config.db_full_path))
+        self.assertTrue(os.path.isfile(config.db_full_path))
         self.assertEqual(recorder.current_state, 'running')
         time.sleep(1)
         recorder.handle_input('i')
-        conn = sqlite3.connect(config.Config.db_full_path)
+        conn = sqlite3.connect(config.db_full_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM WorkRecord')
@@ -141,18 +156,23 @@ class TestRecorder(unittest.TestCase):
         from worktracker import record_now
         from worktracker.libworktracker import record_db
         from worktracker.libworktracker import recorder as r
-        config.Config.timeout_secs = 600  
-        config.Config.db_full_path = self.db_path
+        config = config_module.Config(overriding_params={
+            'data_dir':self.temp_dir,
+            'timeout_secs' : 600,
+            'min_work_block': 600 ,
+            'day_types': ['w', 'h'],
+            'work_types': ['meta', 'yv', 'conpow']
+            })
         approx_from_time = time.time()
-        _, recorder, db_table = record_now.main(config.Config,
+        _, recorder, db_table = record_now.main(config,
                 r.Recorder, record_db, test_args="h yv".split()+['test 40'],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn)
-        self.assertTrue(os.path.isfile(config.Config.db_full_path))
+        self.assertTrue(os.path.isfile(config.db_full_path))
         time.sleep(1)
         self.assertEqual(recorder.current_state, 'running')
         recorder.handle_input('c')
-        conn = sqlite3.connect(config.Config.db_full_path)
+        conn = sqlite3.connect(config.db_full_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM WorkRecord')
@@ -164,19 +184,23 @@ class TestRecorder(unittest.TestCase):
         from worktracker import record_now
         from worktracker.libworktracker import record_db
         from worktracker.libworktracker import recorder as r
-        config.Config.timeout_secs = 600  
-        config.Config.db_full_path = self.db_path
-        config.Config.min_work_block = 200 
+        config = config_module.Config(overriding_params={
+            'data_dir':self.temp_dir,
+            'timeout_secs' : 600,
+            'min_work_block': 200,
+            'day_types': ['w', 'h'],
+            'work_types': ['meta', 'yv', 'conpow']
+            })
         approx_from_time = time.time()
-        _, recorder, db_table = record_now.main(config.Config,
+        _, recorder, db_table = record_now.main(config,
                 r.Recorder, record_db, test_args="h yv".split()+["test 60"],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn)
-        self.assertTrue(os.path.isfile(config.Config.db_full_path))
+        self.assertTrue(os.path.isfile(config.db_full_path))
         time.sleep(1)
         self.assertEqual(recorder.current_state, 'running')
         recorder.handle_input('i')
-        conn = sqlite3.connect(config.Config.db_full_path)
+        conn = sqlite3.connect(config.db_full_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM WorkRecord')
@@ -189,20 +213,24 @@ class TestRecorder(unittest.TestCase):
         from worktracker.libworktracker import record_db
         from worktracker.libworktracker import recorder as r
         # short timeout to check if the row has been inserted
-        config.Config.timeout_secs = 1
-        config.Config.min_work_block = 0
-        config.Config.db_full_path = self.db_path
+        config = config_module.Config(overriding_params={
+            'data_dir':self.temp_dir,
+            'timeout_secs' : 1,
+            'min_work_block': 0,
+            'day_types': ['w', 'h'],
+            'work_types': ['meta', 'yv', 'conpow']
+            })
         approx_from_time = time.time()
-        _, recorder, db_table = record_now.main(config.Config,
+        _, recorder, db_table = record_now.main(config,
                 r.Recorder, record_db, test_args="h yv".split()+['test 70'],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn)
-        self.assertTrue(os.path.isfile(config.Config.db_full_path))
+        self.assertTrue(os.path.isfile(config.db_full_path))
         recorder.handle_input('d 3')
         recorder.handle_input('dis 2')
         recorder.handle_input('distraction 112')
         time.sleep(2)
-        conn = sqlite3.connect(config.Config.db_full_path)
+        conn = sqlite3.connect(config.db_full_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM WorkRecord')
@@ -223,26 +251,30 @@ class TestRecorder(unittest.TestCase):
         from worktracker.libworktracker import record_db
         from worktracker.libworktracker import recorder as r
         # short timeout to check if the row has been inserted
-        config.Config.timeout_secs = .1
-        config.Config.min_work_block = 0
-        config.Config.db_full_path = self.db_path
+        config = config_module.Config(overriding_params={
+            'data_dir':self.temp_dir,
+            'timeout_secs' : 1,
+            'min_work_block': 0,
+            'day_types': ['w', 'h'],
+            'work_types': ['meta', 'yv', 'conpow']
+            })
         approx_from_time = time.time()
-        _, recorder, db_table = record_now.main(config.Config,
+        _, recorder, db_table = record_now.main(config,
                 r.Recorder, record_db, test_args="h yv".split()+['test 80 1'],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn)
-        self.assertTrue(os.path.isfile(config.Config.db_full_path))
-        time.sleep(1)
+        self.assertTrue(os.path.isfile(config.db_full_path))
+        time.sleep(1.5)
         self.assertEqual(recorder.current_state, 'idle')
         # start again with a different task
         recorder.handle_input('s test 80 2')
-        time.sleep(1)
+        time.sleep(1.5)
         self.assertEqual(recorder.current_state, 'idle')
         # start again but with the same previous task
         recorder.handle_input('s')
-        time.sleep(1)
+        time.sleep(1.5)
         self.assertEqual(recorder.current_state, 'idle')
-        conn = sqlite3.connect(config.Config.db_full_path)
+        conn = sqlite3.connect(config.db_full_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM WorkRecord')

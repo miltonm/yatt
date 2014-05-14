@@ -8,8 +8,8 @@ def do_nothing(*args, **kwargs):
 def main(config, recorder_class, db_module, show_output_fn = do_nothing,
         logging_fn=do_nothing, test_args=None):
     '''
-    config has configured default values as in config.py
-    test_args can be used for testing when we don't want sys.argv
+    config has configured default values.
+    test_args can be used for testing when we don't want sys.argv.
     '''
     def in_seconds(arg_val):
         arg_val_min = float(arg_val)
@@ -22,7 +22,7 @@ def main(config, recorder_class, db_module, show_output_fn = do_nothing,
             help="work-type")
     parser.add_argument("task",  help="task you are working on")
     parser.add_argument("--start-with", dest="start_with", type=in_seconds,
-            help="start with number of minutes")
+            help="start with number of minutes (not supported yet)")
     parser.add_argument("--db-path", dest="db_path",
                 default=config.db_full_path, help="Full path of the database")
     parser.add_argument("--timeout-mins", dest="timeout_secs", 
@@ -55,7 +55,8 @@ if __name__ == '__main__':
     from libworktracker import record_db
     from libworktracker import io
     io_inst = io.InOut(print)
-    _, recorder,_ = main(conf.Config, r.Recorder, record_db, io_inst.show_output,
+    config = conf.Config(logging_fn=io_inst.log)
+    _, recorder,_ = main(config, r.Recorder, record_db, io_inst.show_output,
             io_inst.log)
     if not recorder:
         sys.exit(1)

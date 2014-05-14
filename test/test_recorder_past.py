@@ -11,7 +11,7 @@ import tempfile
 import shutil
 import os
 
-from worktracker.libworktracker import config
+from worktracker.libworktracker import config as config_module
 from worktracker.libworktracker import date_time_utils
 
 class MockDb(object):
@@ -20,8 +20,6 @@ class MockDb(object):
 class TestRecorderPast(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp('test_recorder')
-        self.db_path = os.path.join(self.temp_dir,
-                config.get_default_db_name())
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
@@ -30,16 +28,19 @@ class TestRecorderPast(unittest.TestCase):
     def test_10_check_db(self):
         from worktracker import record_past
         from worktracker.libworktracker import record_db
-        config.Config.timezone = 'Europe/London'
-        config.Config.db_full_path = self.db_path
-        print('today 21:00 30 w conpow'.split() + ["test task 40"])
-        ts, table = record_past.main(config.Config,
+        config = config_module.Config(overriding_params={
+            'data_dir': self.temp_dir,
+            'timezone':'Europe/London',
+            'day_types': ['w', 'h'],
+            'work_types': ['meta', 'yv', 'conpow']
+            })
+        ts, table = record_past.main(config,
                 record_db, print, print, time.time(),
                 test_args = '--num-distractions 42 --num-interruptions 42 '
                 'today 21:00 30 w conpow'.split() + ["test task 40"]
                 )
-        self.assertTrue(os.path.isfile(config.Config.db_full_path))
-        conn = sqlite3.connect(config.Config.db_full_path)
+        self.assertTrue(os.path.isfile(config.db_full_path))
+        conn = sqlite3.connect(config.db_full_path)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM WorkRecord')

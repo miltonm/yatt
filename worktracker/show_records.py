@@ -29,4 +29,5 @@ if __name__=='__main__':
     from libworktracker import io
     from libworktracker import record_retriever
     io_inst = io.InOut(print)
-    main(conf.Config, record_db, record_retriever, io_inst)
+    config = conf.Config()
+    main(config, record_db, record_retriever, io_inst)

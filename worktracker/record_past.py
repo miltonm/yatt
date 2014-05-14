@@ -49,5 +49,5 @@ if __name__ == '__main__':
     from libworktracker import record_db
     from libworktracker import io
     io_inst = io.InOut(print)
-    main(conf.Config, record_db, io_inst.show_output, io_inst.log,
-            time.time())
+    config = conf.Config()
+    main(config, record_db, io_inst.show_output, io_inst.log, time.time())
