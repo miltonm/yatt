@@ -5,6 +5,7 @@ import os
 import subprocess
 import textwrap
 from thirdparty import texttable
+import inspect
 
 #debug_mode = 10
 file_name = os.path.join(os.getcwd(), "debuglog")
@@ -12,12 +13,26 @@ debug_mode = 0
 #file_name = None 
 
 
+
 class InOut(object):
     def __init__(self, print_fn):
         self.waiting_for_input = False
         self._lock = threading.RLock()
         self.print_fn = print_fn
+        self.asset_path = self.get_asset_path()
         self.get_prompt_text = None
+
+    def get_asset_path(self):
+        module_dir = os.path.dirname(inspect.getabsfile(self.__class__))
+        asset_dir = os.path.join(module_dir, '..', '..', 'assets')
+        if not os.path.exists(asset_dir):
+            self.log(1, "Can not find asset dir")
+            return
+        asset_file_path = os.path.join(asset_dir, 'CallRingingOut.wav')
+        if not os.path.isfile(asset_file_path):
+            self.log(1, "Cannot find the asset file")
+        self.log(2, "asset_file_path: %s"%(asset_file_path))
+        return asset_file_path
 
     def set_prompt_text_fn(self, prompt_text_fn):
         self.get_prompt_text = prompt_text_fn
@@ -51,8 +66,8 @@ class InOut(object):
                     command_and_args,
                     stderr=subprocess.STDOUT)
             self.log(2, output)
-        except CalledProcessError as e:
-            self.log(2, "Exception in notify-send")
+        except subprocess.CalledProcessError as e:
+            self.log(2, "Exception in os command: %s"%(command_and_args))
             self.log(2, str(e))
 
     def show_gui_dialog(self, *args, **kwargs):
@@ -67,7 +82,7 @@ class InOut(object):
     def play_sound(self):
         if 'linux' in os.sys.platform:
             for _ in xrange(1):
-                self.run_on_system(['play', 'assets/CallRingingOut.wav', 'vol',
+                self.run_on_system(['play', self.asset_path, 'vol',
                     '10', 'dB'])
 
     def show_output(self, *args, **kwargs):
