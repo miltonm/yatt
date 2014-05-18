@@ -24,7 +24,7 @@ class MockRecorder(object):
 class TestRecorder(unittest.TestCase):
 
     def setUp(self):
-        self.test_args = "h yv".split() + ["test task"]
+        self.args_list = "h yv".split() + ["test task"]
         self.temp_dir = tempfile.mkdtemp('test_recorder')
 
     def printfn(self, *args, **kwargs):
@@ -51,7 +51,7 @@ class TestRecorder(unittest.TestCase):
                     })
         args, _, _ = record_now.main(config, MockRecorder,
                 FakeDbModule,
-                test_args = ['--start-with', '30', '--timeout-mins', '20',
+                args_list = ['--start-with', '30', '--timeout-mins', '20',
                 '--minimum-work-block', '10', 'h', 'meta', 'test task 10'],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn
@@ -74,7 +74,7 @@ class TestRecorder(unittest.TestCase):
             'work_types': ['meta', 'yv', 'conpow']
             })
         _, _, db_table = record_now.main(config, MockRecorder,
-                record_db, test_args=self.test_args,
+                record_db, args_list=self.args_list,
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn)
         self.assertTrue(os.path.isfile(config.db_full_path))
@@ -94,7 +94,7 @@ class TestRecorder(unittest.TestCase):
         approx_from_time = time.time()
         _, recorder, db_table = record_now.main(config_ob,
                 recorder.Recorder, record_db,
-                test_args='h yv'.split() + ["test task 30"],
+                args_list='h yv'.split() + ["test task 30"],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn
                 )
@@ -129,7 +129,7 @@ class TestRecorder(unittest.TestCase):
             })
         approx_from_time = time.time()
         _, recorder, db_table = record_now.main(config,
-                r.Recorder, record_db, test_args="h yv".split() + ["test 40"],
+                r.Recorder, record_db, args_list="h yv".split() + ["test 40"],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn)
         self.assertTrue(os.path.isfile(config.db_full_path))
@@ -165,7 +165,7 @@ class TestRecorder(unittest.TestCase):
             })
         approx_from_time = time.time()
         _, recorder, db_table = record_now.main(config,
-                r.Recorder, record_db, test_args="h yv".split()+['test 40'],
+                r.Recorder, record_db, args_list="h yv".split()+['test 40'],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn)
         self.assertTrue(os.path.isfile(config.db_full_path))
@@ -193,7 +193,7 @@ class TestRecorder(unittest.TestCase):
             })
         approx_from_time = time.time()
         _, recorder, db_table = record_now.main(config,
-                r.Recorder, record_db, test_args="h yv".split()+["test 60"],
+                r.Recorder, record_db, args_list="h yv".split()+["test 60"],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn)
         self.assertTrue(os.path.isfile(config.db_full_path))
@@ -222,7 +222,7 @@ class TestRecorder(unittest.TestCase):
             })
         approx_from_time = time.time()
         _, recorder, db_table = record_now.main(config,
-                r.Recorder, record_db, test_args="h yv".split()+['test 70'],
+                r.Recorder, record_db, args_list="h yv".split()+['test 70'],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn)
         self.assertTrue(os.path.isfile(config.db_full_path))
@@ -260,7 +260,7 @@ class TestRecorder(unittest.TestCase):
             })
         approx_from_time = time.time()
         _, recorder, db_table = record_now.main(config,
-                r.Recorder, record_db, test_args="h yv".split()+['test 80 1'],
+                r.Recorder, record_db, args_list="h yv".split()+['test 80 1'],
                 show_output_fn = self.printfn,
                 logging_fn = self.printfn)
         self.assertTrue(os.path.isfile(config.db_full_path))

@@ -6,16 +6,16 @@ def do_nothing(*args, **kwargs):
     pass
 
 def main(config, recorder_class, db_module, show_output_fn = do_nothing,
-        logging_fn=do_nothing, test_args=None):
+        logging_fn=do_nothing, args_list=None, parser=None):
     '''
     config has configured default values.
-    test_args can be used for testing when we don't want sys.argv.
+    args_list can be used for testing when we don't want sys.argv.
     '''
     def in_seconds(arg_val):
         arg_val_min = float(arg_val)
         return int(arg_val_min*60)
 
-    parser = argparse.ArgumentParser()
+    parser = parser or argparse.ArgumentParser()
     parser.add_argument("day_type",
                     choices=config.day_types, help="day-type")
     parser.add_argument("work_type",  choices=config.work_types,
@@ -33,7 +33,7 @@ def main(config, recorder_class, db_module, show_output_fn = do_nothing,
             type=in_seconds, default=config.min_work_block,
             help="Work is not recorded if interrupted before you work for"
             " at least these many minutes")
-    args = parser.parse_args(test_args)
+    args = parser.parse_args(args_list)
     if args.min_work_block > args.timeout_secs:
         show_output_fn("Minimum work block cannot be more than the timeout."
                 "Your minimum work block is set to %s and your timeout is"
@@ -54,10 +54,15 @@ if __name__ == '__main__':
     from libworktracker import recorder as r
     from libworktracker import record_db
     from libworktracker import io
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config-path", dest="config_path",
+                default=None, help="Path to the config file")
+    (args, rest_of_args) = parser.parse_known_args()
     io_inst = io.InOut(print)
-    config = conf.Config(logging_fn=io_inst.log)
+    config = conf.Config(file_path_from_cl=args.config_path,
+            logging_fn=io_inst.log)
     _, recorder,_ = main(config, r.Recorder, record_db, io_inst.show_output,
-            io_inst.log)
+            io_inst.log, args_list=rest_of_args, parser=parser)
     if not recorder:
         sys.exit(1)
     io_inst.set_prompt_text_fn(recorder.get_prompt_text)

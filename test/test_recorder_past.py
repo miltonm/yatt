@@ -36,7 +36,7 @@ class TestRecorderPast(unittest.TestCase):
             })
         ts, table = record_past.main(config,
                 record_db, print, print, time.time(),
-                test_args = '--num-distractions 42 --num-interruptions 42 '
+                args_list = '--num-distractions 42 --num-interruptions 42 '
                 'today 21:00 30 w conpow'.split() + ["test task 40"]
                 )
         self.assertTrue(os.path.isfile(config.db_full_path))
