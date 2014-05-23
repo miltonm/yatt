@@ -242,6 +242,18 @@ class LiteTable(object):
         return vals
 
 
+    def select_raw(self, what_part, end_part=''):
+        ''' 
+        '''
+        r = None
+        q = 'select %s from %s %s'%(what_part, self.tableName, end_part)
+        self.log(2, q)
+        with S3Con(self.dbName) as db:
+            db.cur.execute(q)
+            r = db.cur.fetchall()
+            self.log(2, str(r))
+        return r
+
     def select(self, what, whereClause = None):
         ''' 
         select((table_instance.col1, table_instance.col2), "col3='stupid'")

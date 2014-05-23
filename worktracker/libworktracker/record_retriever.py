@@ -26,6 +26,45 @@ def get_rows_in_ts_range(db_table, tz, ts1, ts2):
             'from_timestamp >= %s and to_timestamp <= %s'%(ts1, ts2))
     return rows
 
+def get_totals_in_ts_range(db_table, ts1, ts2):
+    total_all = db_table.select_raw(
+            'sum(to_timestamp-from_timestamp) as total_duration,'
+            'sum(num_interruptions) as total_interruptions,'
+            'sum(num_distractions) as total_distractions',
+            'where from_timestamp >= %s and to_timestamp <= %s'%(ts1, ts2))
+    total_by_work_type = db_table.select_raw(
+            'work_type,'
+            'sum(to_timestamp-from_timestamp) as total_duration,'
+            'sum(num_interruptions) as total_interruptions,'
+            'sum(num_distractions) as total_distractions',
+            'where from_timestamp >= %s and to_timestamp <= %s '
+            'group by work_type'%(ts1, ts2))
+    total_by_day_type = db_table.select_raw(
+            'day_type,'
+            'sum(to_timestamp-from_timestamp) as total_duration,'
+            'sum(num_interruptions) as total_interruptions,'
+            'sum(num_distractions) as total_distractions',
+            'where from_timestamp >= %s and to_timestamp <= %s '
+            'group by day_type'%(ts1, ts2))
+    return (total_all, total_by_work_type, total_by_day_type)
+
+def get_disp_dict_from_total_row(r):
+    # display dictionary
+    dd = {}
+    for k in r.keys():
+        if k=='total_duration':
+            total_dur_mins = r[k]/60.0
+            total_dur_hours = total_dur_mins/60.0
+            if total_dur_hours < 1:
+                dd[k] = '%0.2f mins'%(total_dur_mins)
+            else:
+                dd[k] = '%0.2f hours'%(total_dur_hours)
+        elif isinstance(r[k], float):
+            dd[k] = "%0.2f"%(r[k])
+        else:
+            dd[k] = "%s"%(r[k])
+    return dd
+
 def get_disp_dict_from_row(tz, r):
     # display dictionary
     dd = {}
@@ -55,4 +94,14 @@ def show_record(args, db_table, io):
             display_dicts[0]['from_date'], display_dicts[0]['day_type']))
         io.show_table(['from_time', 'to_time', 'duration', 'work_type',
             'interruptions', 'distractions', 'task'], display_dicts)
+        (total_all, total_work_type, total_day_type) = get_totals_in_ts_range(
+                db_table, *ts_range)
+        all_disp_dict = map(get_disp_dict_from_total_row, total_all)
+        work_type_disp_dict = map(get_disp_dict_from_total_row,
+                total_work_type)
+        day_type_disp_dict = map(get_disp_dict_from_total_row, total_day_type)
+        io.show_table(['total_duration', 'total_interruptions',
+            'total_distractions'], all_disp_dict)
+        io.show_table(['work_type', 'total_duration', 'total_interruptions',
+            'total_distractions'], work_type_disp_dict)
 
