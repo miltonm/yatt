@@ -283,6 +283,39 @@ class TestRecorder(unittest.TestCase):
         self.assertEqual(rows[-2]['task'], 'test 80 2')
         self.assertEqual(rows[-3]['task'], 'test 80 1')
 
+    def test_90_test_query_time_left(self):
+        import re
+        from worktracker import record_now
+        from worktracker.libworktracker import record_db
+        from worktracker.libworktracker import recorder as r
+        stored_display_strings = []
+        def display_fn(*args, **kwargs):
+            args = map(str, args) 
+            concated = ','.join(args)
+            stored_display_strings.append(concated)
+
+        config = config_module.Config(overriding_params={
+            'data_dir':self.temp_dir,
+            'timeout_secs' : 60,
+            'min_work_block': 0,
+            'day_types': ['w', 'h'],
+            'work_types': ['meta', 'yv', 'conpow']
+            })
+        approx_from_time = time.time()
+        _, recorder, db_table = record_now.main(config,
+                r.Recorder, record_db, args_list="h yv".split()+['test 40'],
+                show_output_fn = display_fn,
+                logging_fn = self.printfn)
+        self.assertTrue(os.path.isfile(config.db_full_path))
+        time.sleep(1)
+        self.assertEqual(recorder.current_state, 'running')
+        recorder.handle_input('t')
+        time_left_string = stored_display_strings.pop()
+        self.assertTrue(time_left_string.startswith("Time left in the block"))
+        tl = float(re.findall(r'\b\d+.\d+\b', time_left_string)[0])
+        self.assertLess(tl, 1.0)
+        recorder.handle_input('c')
+
 
 
 if __name__ == '__main__':

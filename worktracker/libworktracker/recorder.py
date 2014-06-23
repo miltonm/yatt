@@ -166,6 +166,18 @@ class Recorder(object):
             retval = (False, self.num_distractions, str(e))
         return retval
 
+    def _query_time_left(self):
+        retval = [True, 0, ""]
+        if self.current_state != 'running': 
+            retval = (False, 0, "Cannot check time-left in %s state"%(
+                self.current_state.upper()))
+        else:
+            td = time.time() - self.start_time
+            time_left = self.config.timeout_secs - td
+            time_left_in_mins = time_left/60.0
+            retval[1] = time_left_in_mins
+        return retval
+
     def handle_input(self, input_str):
         ''' returns True if it wants to exit '''
         #import pdb;pdb.set_trace()
@@ -202,6 +214,13 @@ class Recorder(object):
             is_success, num, msg = self._distraction_hanlder(input_strs[1:])
             if is_success:
                 self.show_output("Num dstrctns so far: ", num)
+            else:
+                self.show_output("Something went wrong.", msg)
+        elif 'time-left'.startswith(input_strs[0]):
+           # this one does not affect statemachine
+            is_success, tl, msg = self._query_time_left()
+            if is_success:
+                self.show_output("Time left in the block: %0.2f mins"%(tl))
             else:
                 self.show_output("Something went wrong.", msg)
         else:
