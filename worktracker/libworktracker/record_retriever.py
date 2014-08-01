@@ -69,9 +69,9 @@ def get_disp_dict_from_row(tz, r):
     # display dictionary
     dd = {}
     dd['duration'] = str((r['to_timestamp'] - r['from_timestamp'])/60.0)
-    (dd['from_date'], dd['from_time']) = dutil.ts_to_local_time(
+    (dd['from_date'], dd['from_time']) = dutil.ts_to_local_date_time_strs(
             r['from_timestamp'], tz)
-    (dd['to_date'], dd['to_time']) = dutil.ts_to_local_time(
+    (dd['to_date'], dd['to_time']) = dutil.ts_to_local_date_time_strs(
             r['to_timestamp'], tz)
     dd['interruptions'] = "%si's"%(r['num_interruptions'])
     dd['distractions'] = "%sd's"%(r['num_distractions'])
