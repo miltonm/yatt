@@ -6,6 +6,9 @@ import subprocess
 import textwrap
 from thirdparty import texttable
 import inspect
+import time
+
+import date_time_utils
 
 #debug_mode = 10
 file_name = os.path.join(os.getcwd(), "debuglog")
@@ -15,7 +18,15 @@ debug_mode = 0
 
 
 class InOut(object):
-    def __init__(self, print_fn):
+    fmt = '%Y-%m-%d %H:%M:%S %Z%z'
+    def get_date_time_str(self):
+        ts = time.time()
+        local_dt = date_time_utils.ts_to_local_datetime(ts, "Europe/London")
+        dt_output_str = local_dt.strftime(self.fmt)
+        return dt_output_str
+        
+    def __init__(self, print_fn, log_dir=None):
+        self.log_dir = log_dir
         self.waiting_for_input = False
         self._lock = threading.RLock()
         self.print_fn = print_fn
@@ -105,8 +116,10 @@ class InOut(object):
     def log(self, priority , msg):
         if priority <= debug_mode:
             self.show_output("recorder-log: ", msg)
-        if file_name:
-            with open(file_name, 'a') as f:
+        if self.log_dir:
+            msg = "%s :: %s"%(self.get_date_time_str(), msg)
+            logfile_path = os.path.join(self.log_dir, 'debuglog')
+            with open(logfile_path, 'a') as f:
                 self.print_fn(msg, file=f)
 
     def show_table(self, headers, data_dict_list):

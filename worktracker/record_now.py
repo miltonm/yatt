@@ -58,8 +58,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--config-path", dest="config_path",
                 default=None, help="Path to the config file")
+    parser.add_argument("--log-dir", dest="log_dir",
+                default=None, help="Path to the dir where you want to keep "
+                " the log file")
     (args, rest_of_args) = parser.parse_known_args()
-    io_inst = io.InOut(print)
+    io_inst = io.InOut(print, log_dir=args.log_dir)
     config = conf.Config(file_path_from_cl=args.config_path,
             logging_fn=io_inst.log)
     _, recorder,_ = main(config, r.Recorder, record_db, io_inst.show_output,
