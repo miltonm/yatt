@@ -1,6 +1,8 @@
 from __future__ import print_function
-import sys
-sys.path.append('..')
+import sys, os
+# add our module dependencies to the path
+deps_path = os.path.realpath(os.path.dirname(__file__) + "/..")
+sys.path.append(deps_path)
 
 
 import unittest
