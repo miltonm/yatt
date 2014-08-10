@@ -79,6 +79,7 @@ class Config(object):
     def _get_config_file(self, file_path, data_dir):
         file_tobe_created = False
         if not file_path:
+            file_tobe_created = True
             file_path = os.path.join(data_dir,'.yattconfig')
         if not os.path.isfile(file_path):
             file_tobe_created = True
