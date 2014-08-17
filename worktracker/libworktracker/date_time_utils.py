@@ -115,4 +115,15 @@ def ts_ranges_for_last_n_weeks(n, now_timestamp, tz_str):
     return [ week_boundaries_to_ts_range(*date_pair, tz_str=tz_str)
             for date_pair in last_n_weeks ]
 
+def ts_ranges_for_last_n_days(n, now_timestamp, tz):
+    (start_of_today, _ ) = parse_date_to_ts_range("today", now_timestamp, tz)
+    eoy = start_of_today - 1
+    day_in_secs = 24*60*60
+    return ( (start_ts, start_ts+day_in_secs-1) 
+            for start_ts in xrange(start_of_today-n*day_in_secs,
+                start_of_today, day_in_secs))
+
+
+
+
 
