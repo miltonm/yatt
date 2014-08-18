@@ -79,7 +79,6 @@ class Config(object):
     def _get_config_file(self, file_path, data_dir):
         file_tobe_created = False
         if not file_path:
-            file_tobe_created = True
             file_path = os.path.join(data_dir,'.yattconfig')
         if not os.path.isfile(file_path):
             file_tobe_created = True
@@ -110,8 +109,7 @@ class Config(object):
         for p in over_vals:
             config_parser.set('DEFAULT', p, over_vals[p])
         with open(file_path, 'w') as f:
-            if file_tobe_created:
-                self._write_intro(f)
+            self._write_intro(f)
             config_parser.write(f)
         return config_parser
 
