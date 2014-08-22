@@ -12,6 +12,7 @@ from datetime import datetime
 import os
 from ConfigParser import SafeConfigParser
 import json
+import cStringIO
 
 import misc_utils
 
@@ -19,7 +20,7 @@ import misc_utils
 
 class Config(object):
     def __init__(self, file_path_from_cl=None, overriding_params=None,
-            logging_fn=print):
+            logging_fn=print, show_output_fn=print):
         '''
         Impl logic:
         If there is no file: 'overriding_params' take precedance over
@@ -38,6 +39,7 @@ class Config(object):
         # more predictable when we try to access a non-exitent attribue.
         self.config_parser = None
         self.log = logging_fn
+        self._print = show_output_fn
         over_vals = overriding_params or {}
         default_vals = {
                 'timeout_secs': 30*60,
@@ -111,6 +113,12 @@ class Config(object):
         with open(file_path, 'w') as f:
             self._write_intro(f)
             config_parser.write(f)
+        if file_tobe_created:
+            dummy_fileobj = cStringIO.StringIO()
+            self._print("* Created  new file: %s"%(file_path))
+            self._print(">> Wrote the following config: ")
+            config_parser.write(dummy_fileobj)
+            self._print(dummy_fileobj.getvalue())
         return config_parser
 
     def _get_from_conf(self, conf_name):
