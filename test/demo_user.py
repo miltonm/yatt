@@ -87,7 +87,7 @@ class DemoDb(object):
         conf = (config.Config(file_path_from_cl=args.config_path)
                 if args.config_path
                 else self.create_config())
-        print(conf.config_file_path)
+        print("Config file path: ", conf.config_file_path)
         db_table = record_db.create_record_table(conf.db_full_path,
                 self.log)
         # prepopulate data for last 5 weeks
