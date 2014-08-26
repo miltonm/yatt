@@ -16,7 +16,7 @@ def main(config, recorder_class, db_module, show_output_fn = do_nothing,
         arg_val_min = float(arg_val)
         return int(arg_val_min*60)
 
-    parser = parser or argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(parents=[parser] if parser else [])
     parser.add_argument("day_type",
                     choices=config.day_types, help="day-type")
     parser.add_argument("work_type",  choices=config.work_types,
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     from libworktracker import recorder as r
     from libworktracker import record_db
     from libworktracker import io
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--config-path", dest="config_path",
                 default=None, help="Path to the config file")
     parser.add_argument("--log-dir", dest="log_dir",

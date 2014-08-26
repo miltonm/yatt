@@ -11,7 +11,7 @@ def main(config, db_module, show_output_fn, logging_fn, now_timestamp,
     def in_seconds(arg_val):
         arg_val_min = float(arg_val)
         return int(arg_val_min*60)
-    parser = parser or argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(parents=[parser] if parser else [])
     parser.add_argument("date",
             help="<dd-mm-yyyy>/yesterday/today",
             metavar="date/day")
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     from libworktracker import config as conf
     from libworktracker import record_db
     from libworktracker import io
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--config-path", dest="config_path",
                 default=None, help="Path to the config file")
     parser.add_argument("--log-dir", dest="log_dir",

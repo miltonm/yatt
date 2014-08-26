@@ -6,7 +6,7 @@ def main(config, db_module, record_retriever, io, args_list=None, parser=None):
     '''
     --average --total --per-day --detailed
     '''
-    parser = parser or argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(parents=[parser] if parser else [])
     when_group = parser.add_mutually_exclusive_group(required=True)
     when_group.add_argument('--oneday', 
             help="Stats for one day. Format: today/yesterday/<dd-mm-yyyy>")
@@ -28,7 +28,7 @@ if __name__=='__main__':
     from libworktracker import record_db
     from libworktracker import io
     from libworktracker import record_retriever
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--config-path", dest="config_path",
                 default=None, help="Path to the config file")
     parser.add_argument("--log-dir", dest="log_dir",
