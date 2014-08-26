@@ -25,11 +25,12 @@ class InOut(object):
         dt_output_str = local_dt.strftime(self.fmt)
         return dt_output_str
         
-    def __init__(self, print_fn, log_dir=None):
+    def __init__(self, print_fn, log_dir=None, get_user_input_fn=raw_input):
         self.log_dir = log_dir
         self.waiting_for_input = False
         self._lock = threading.RLock()
         self.print_fn = print_fn
+        self.get_user_input = get_user_input_fn
         self.asset_path = self.get_asset_path()
         self.get_prompt_text = None
 
@@ -122,8 +123,8 @@ class InOut(object):
             with open(logfile_path, 'a') as f:
                 self.print_fn(msg, file=f)
 
-    def show_table(self, headers, data_dict_list):
-        table = texttable.Texttable()
+    def show_table(self, headers, data_dict_list, max_width=80):
+        table = texttable.Texttable(max_width=max_width)
         table.add_row(headers)
         for d in data_dict_list:
             r = []
@@ -132,4 +133,14 @@ class InOut(object):
                 r.append(content)
             table.add_row(r)
         self.print_fn(table.draw())
+
+    def get_confirmation(self, question, failure_text=None, success_text=None):
+        user_input = self.get_user_input(question)
+        if not 'yessssss'.startswith(user_input.lower()):
+            if failure_text:
+                self.show_output(failure_text)
+            return False
+        if success_text:
+            self.show_output(success_text)
+        return True
 

@@ -36,7 +36,7 @@ class S3Con(object):
         return self
 
     def __exit__(self, _type, _value, _tb):
-        to_rethrow = False
+        to_rethrow = True
         self.conn.commit()
         self.cur.close()
         self.conn.close()
@@ -311,6 +311,18 @@ def create_record_table(db_full_path, log_fn):
                 work_type = 'text',
                 day_type = 'text',
                 task = 'text'
+                ), log_fn)
+    table.create()
+    return table
+
+def create_goal_table(db_full_path, log_fn):
+    table = LiteTable(db_full_path, "Goals",
+            dict( id = 'integer primary key autoincrement',
+                start_timestamp = 'integer',
+                end_timestamp = 'integer',
+                num_hours = 'integer',
+                work_type = 'text',
+                name = 'text unique'
                 ), log_fn)
     table.create()
     return table

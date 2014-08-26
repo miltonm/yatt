@@ -18,6 +18,8 @@ def parse_date(date_str, now_timestamp):
             return today_date
         elif date_str == 'yesterday':
             return today_date - datetime.timedelta(days=1)
+        elif date_str == 'tomorrow':
+            return today_date + datetime.timedelta(days=1)
         else:
             (d, m, y) = map(int, date_str.split('-'))
             return datetime.date(y, m, d)
@@ -123,7 +125,12 @@ def ts_ranges_for_last_n_days(n, now_timestamp, tz):
             for start_ts in xrange(start_of_today-n*day_in_secs,
                 start_of_today, day_in_secs))
 
-
+def days_bet(start_date_str, end_date_str, now_timestamp):
+    ''' days between start date and end date.'''
+    # should we take care of timezones here ?
+    start_date = parse_date(start_date_str, now_timestamp)
+    end_date = parse_date(end_date_str, now_timestamp)
+    return (end_date - start_date).days
 
 
 
