@@ -10,6 +10,8 @@ def main(config, db_module, record_retriever, io, args_list=None, parser=None):
     when_group = parser.add_mutually_exclusive_group(required=True)
     when_group.add_argument('--oneday', 
             help="Stats for one day. Format: today/yesterday/<dd-mm-yyyy>")
+    when_group.add_argument('--thisweek', help="Stats for current week.",
+            action='store_true')
     when_group.add_argument('--range', nargs=2, dest='trange', 
             metavar = ('<start-date>', '<end-date>'),
             help='''Format: today/yesterday/<dd-mm-yyyy>.

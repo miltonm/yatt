@@ -93,7 +93,7 @@ def show_day_detail(db_table, io, tz, ts1, ts2):
         'interruptions', 'distractions', 'task'], display_dicts)
     return len(rows)
 
-def show_day_total(db_table, io, ts1, ts2):
+def show_total_in_ts_range(db_table, io, ts1, ts2):
     (total_all, total_work_type, total_day_type) = get_totals_in_ts_range(
             db_table, ts1, ts2)
     if total_all[0][0] is None:
@@ -117,19 +117,25 @@ def show_record(args, db_table, io):
         ts_range = dutil.parse_date_to_ts_range(args.oneday, now_ts, tz)
         is_succ = show_day_detail(db_table, io, tz, *ts_range)
         if is_succ:
-            show_day_total(db_table, io, *ts_range)
+            show_total_in_ts_range(db_table, io, *ts_range)
+    elif args.thisweek:
+        ts_range = dutil.ts_range_for_current_week_till_today(now_ts, tz)
+        (s_date, e_date) = map(ts_to_date, ts_range)
+        io.show_output("Table for current week from %s to %s"%(s_date, e_date))
+        print("=============================================")
+        show_total_in_ts_range(db_table, io, *ts_range)
     elif args.last and args.last[1].startswith('day'):
         for ts_range in dutil.ts_ranges_for_last_n_days(int(args.last[0]),
                 now_ts, tz):
             date_str = ts_to_date(ts_range[0]) 
             io.show_output("Table for %s "%(date_str))
             print("==========================")
-            show_day_total(db_table, io, *ts_range)
+            show_total_in_ts_range(db_table, io, *ts_range)
     elif args.last and args.last[1].startswith('week'):
         for ts_range in dutil.ts_ranges_for_last_n_weeks(int(args.last[0]),
                 now_ts, tz):
             (s_date, e_date) = map(ts_to_date, ts_range)
             io.show_output("Table for week from %s to %s"%(s_date, e_date))
             print("=============================================")
-            show_day_total(db_table, io, *ts_range)
+            show_total_in_ts_range(db_table, io, *ts_range)
 
